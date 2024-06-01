@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat Room</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <div class="message-box">
+      <h2>Chat Room</h2>
+      <div class="messages" id="messages"></div>
+      <div class="inputs">
+        <input type="text" rows="3" placeholder="Message" id="message" />
+        <button type="button" id="send-btn" onclick="sendMessage()">
+          Send
+        </button>
+      </div>
+    </div>
+    <script>
+      const urlParams = new URLSearchParams(window.location.search);
+      const room = urlParams.get("room");
+      const name = urlParams.get("name");
+      const socket = io();
+
+      socket.emit("join", { room, name });
+
+      const messages = document.getElementById("messages");
+
+      const createMessage = (name, msg) => {
+        const content = `
+            <div class="text">
+                <span>
+                    <strong>${name}</strong>: ${msg}
+                </span>
+                <span class="muted">
+                    ${new Date().toLocaleString()}
+                </span>
+            </div>
+            `;
+        messages.innerHTML += content;
+      };
+
+      socket.on("message", (data) => {
+        createMessage(data.name, data.message);
+      });
+
+      socket.on("previousMessages", (messages) => {
+        messages.forEach((msg) => createMessage(msg.name, msg.message));
+      });
+
+      const sendMessage = () => {
+        const message = document.getElementById("message").value;
+        if (message === "") return;
+        socket.emit("message", { message });
+        document.getElementById("message").value = "";
+      };
+    </script>
+  </body>
+</html>

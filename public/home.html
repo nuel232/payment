@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Chat App</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <form id="home-form" class="buttons">
+      <h3>Enter The Chat Room</h3>
+      <div>
+        <label>Name:</label>
+        <input type="text" placeholder="Pick a name!" name="name" id="name" />
+      </div>
+      <div class="join">
+        <input type="text" placeholder="Room Code" name="code" id="code" />
+        <button type="button" class="join-btn" onclick="joinRoom()">
+          Join a Room
+        </button>
+      </div>
+      <button type="button" class="create-btn" onclick="createRoom()">
+        Create a Room
+      </button>
+      <div class="public-room-container">
+        <label for="public" class="public-room-label">Public room:</label>
+        <input
+          type="checkbox"
+          id="public"
+          name="public"
+          value="true"
+          class="public-room-checkbox"
+        />
+      </div>
+    </form>
+    <h2>Available Public Rooms:</h2>
+    <ul>
+      {% for room in public_room_list %}
+      <li class="room-info">
+        Room Code: <span class="room-code">{{ room.code }}</span> | Created by:
+        <span class="creator">{{ room.creator }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <script>
+      async function joinRoom() {
+        const name = document.getElementById("name").value;
+        const code = document.getElementById("code").value;
+        const response = await fetch("/room", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, code, join: true }),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          window.location.href = `/room.html?room=${result.room}&name=${name}`;
+        } else {
+          alert(result.error);
+        }
+      }
+
+      async function createRoom() {
+        const name = document.getElementById("name").value;
+        const public = document.getElementById("public").checked;
+        const response = await fetch("/room", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ name, create: true, public }),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          window.location.href = `/room.html?room=${result.room}&name=${name}`;
+        } else {
+          alert(result.error);
+        }
+      }
+    </script>
+  </body>
+</html>
